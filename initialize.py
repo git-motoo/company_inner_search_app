@@ -20,6 +20,11 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 import constants as ct
 
+from config import CHUNK_SIZE, CHUNK_OVERLAP, RETRIEVER_TOP_K
+
+
+
+
 
 ############################################################
 # 設定関連
@@ -122,9 +127,14 @@ def initialize_retriever():
     embeddings = OpenAIEmbeddings()
     
     # チャンク分割用のオブジェクトを作成
+
+    # チャンク分割の設定値は、config.pyから読み出す
+    # print("CHUNK_SIZE = ", CHUNK_SIZE)
+    # print("CHUNK_OVERLAP = ", CHUNK_OVERLAP) 
+    
     text_splitter = CharacterTextSplitter(
-        chunk_size=500,
-        chunk_overlap=50,
+        chunk_size=CHUNK_SIZE,
+        chunk_overlap=CHUNK_OVERLAP,
         separator="\n"
     )
 
@@ -135,7 +145,11 @@ def initialize_retriever():
     db = Chroma.from_documents(splitted_docs, embedding=embeddings)
 
     # ベクターストアを検索するRetrieverの作成
-    st.session_state.retriever = db.as_retriever(search_kwargs={"k": 3})
+    # st.session_state.retriever = db.as_retriever(search_kwargs={"k": 3})
+    
+    # 上位k件を取得するRETRIEVER_TOP_Kの値は、config.pyから読み出す
+    # print("retriever_numeber = ", RETRIEVER_TOP_K) 
+    st.session_state.retriever = db.as_retriever(search_kwargs={"k": RETRIEVER_TOP_K})
 
 
 def initialize_session_state():
