@@ -20,7 +20,7 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 import constants as ct
 
-from config import CHUNK_SIZE, CHUNK_OVERLAP, RETRIEVER_TOP_K
+# from config import CHUNK_SIZE, CHUNK_OVERLAP, RETRIEVER_TOP_K
 
 
 
@@ -132,9 +132,15 @@ def initialize_retriever():
     # print("CHUNK_SIZE = ", CHUNK_SIZE)
     # print("CHUNK_OVERLAP = ", CHUNK_OVERLAP) 
     
+    #text_splitter = CharacterTextSplitter(
+    #    chunk_size=CHUNK_SIZE,
+    #    chunk_overlap=CHUNK_OVERLAP,
+    #    separator="\n"
+    #)
+
     text_splitter = CharacterTextSplitter(
-        chunk_size=CHUNK_SIZE,
-        chunk_overlap=CHUNK_OVERLAP,
+        chunk_size=ct.CHUNK_SIZE,
+        chunk_overlap=ct.CHUNK_OVERLAP,
         separator="\n"
     )
 
@@ -149,7 +155,7 @@ def initialize_retriever():
     
     # 上位k件を取得するRETRIEVER_TOP_Kの値は、config.pyから読み出す
     # print("retriever_numeber = ", RETRIEVER_TOP_K) 
-    st.session_state.retriever = db.as_retriever(search_kwargs={"k": RETRIEVER_TOP_K})
+    st.session_state.retriever = db.as_retriever(search_kwargs={"k": ct.RETRIEVER_TOP_K})
 
 
 def initialize_session_state():

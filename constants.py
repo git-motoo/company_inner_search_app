@@ -13,6 +13,9 @@ from langchain_community.document_loaders.csv_loader import CSVLoader
 # 共通変数の定義
 ############################################################
 
+CHUNK_SIZE = 1000
+CHUNK_OVERLAP = 100
+RETRIEVER_TOP_K = 5
 
 # ==========================================
 # 画面表示系
