@@ -22,10 +22,9 @@ def display_app_title():
 
 
 def display_select_mode():
-
-# ----------------------------
-# Sidebar
-# ----------------------------
+    """
+    Sidebar
+    """
     st.sidebar.markdown("### 利用目的")
     st.session_state.mode = st.sidebar.radio(
         label="",
@@ -45,10 +44,23 @@ def display_select_mode():
         "質問・要望に対して、社内文書の情報をもとに回答を得られます。",
         "人事部に所属している従業員情報を一覧化して",
         )
-    
-# ----------------------------
-# Main
-# ----------------------------
+
+def sidebar_section(title: str, blue_text: str, example: str):
+    st.sidebar.markdown(f"""
+    <div class="card">
+        <div class="card-title">【「{title}」を選択した場合】</div>
+        <div class="card card-blue">{blue_text}</div>
+        <div class="card card-example">
+            <div style="font-weight:700; margin-bottom:6px;">【入力例】</div>
+            <div>{example}<BR><BR><BR></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+def display_initial_ai_message():
+    """
+    Main
+    """
 
     st.markdown('<div class="chat-area">', unsafe_allow_html=True)
     st.markdown(f"""
@@ -69,17 +81,6 @@ def display_select_mode():
         st.success("こんにちは。私は社内文書の情報をもとに回答する生成AIチャットボットです。上記で利用目的を選択し、画面下部のチャット欄からメッセージを送信してください。")
         st.markdown("具体的に入力した方が、希望通りの回答を得られそうです。")
 
-def sidebar_section(title: str, blue_text: str, example: str):
-    st.sidebar.markdown(f"""
-    <div class="card">
-        <div class="card-title">【「{title}」を選択した場合】</div>
-        <div class="card card-blue">{blue_text}</div>
-        <div class="card card-example">
-            <div style="font-weight:700; margin-bottom:6px;">【入力例】</div>
-            <div>{example}<BR><BR><BR></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
 
 def display_conversation_log():
     """
@@ -111,7 +112,7 @@ def display_conversation_log():
                         icon = utils.get_source_icon(message['content']['main_file_path'])
                         # 参照元ドキュメントのページ番号が取得できた場合にのみ、ページ番号を表示
                         if "main_page_number" in message["content"]:
-                            st.success(f"{message['content']['main_file_path']}( ページNo.{message['content']['main_page_number']})", icon=icon)
+                            st.success(f"{message['content']['main_file_path']} (ページNo.{message['content']['main_page_number']})", icon=icon)
                         else:
                             st.success(f"{message['content']['main_file_path']}", icon=icon)
                         
@@ -128,7 +129,7 @@ def display_conversation_log():
                                 icon = utils.get_source_icon(sub_choice['source'])
                                 # 参照元ドキュメントのページ番号が取得できた場合にのみ、ページ番号を表示
                                 if "page_number" in sub_choice:
-                                    st.info(f"{sub_choice['source']} ( ページNo.{sub_choice['page_number']})", icon=icon)
+                                    st.info(f"{sub_choice['source']} (ページNo.{sub_choice['page_number']})", icon=icon)
                                 else:
                                     st.info(f"{sub_choice['source']}", icon=icon)
                     # ファイルのありかの情報が取得できなかった場合、LLMからの回答のみ表示
@@ -184,7 +185,7 @@ def display_search_llm_response(llm_response):
             main_page_number = llm_response["context"][0].metadata["page"]
             # 「メインドキュメントのファイルパス」と「ページ番号」を表示
             # st.success(f"{message['content']['main_file_path']},No.,{message['content']['main_page_number']}", icon=icon)
-            st.success(f"{main_file_path}( ページNo.{main_page_number})", icon=icon)
+            st.success(f"{main_file_path} (ページNo.{main_page_number})", icon=icon)
             print("main_page_number =", main_page_number)
         else:
             # 「メインドキュメントのファイルパス」を表示
@@ -209,15 +210,14 @@ def display_search_llm_response(llm_response):
                 continue
             
             # 同じファイル内の異なる箇所を参照した場合、2件目以降のファイルパスに重複が発生する可能性があるため、重複を除去
-            #if sub_file_path in duplicate_check_list:
-            #    continue
-
-# 重複チェック用に、ファイルパスとページ番号の組み合わせも確認
-            dup_key = (sub_file_path, document.metadata.get("page"))
-            if dup_key in duplicate_check_list:
+            if sub_file_path in duplicate_check_list:
                 continue
-            duplicate_check_list.append(dup_key)
-# ここまで
+
+            # 重複チェック用に、ファイルパスとページ番号の組み合わせも確認
+            # dup_key = (sub_file_path, document.metadata.get("page"))
+            # if dup_key in duplicate_check_list:
+            #     continue
+            # duplicate_check_list.append(dup_key)
 
             # 重複チェック用のリストにファイルパスを順次追加
             duplicate_check_list.append(sub_file_path)
@@ -248,7 +248,7 @@ def display_search_llm_response(llm_response):
                 # ページ番号が取得できない場合のための分岐処理
                 if "page_number" in sub_choice:
                     # 「サブドキュメントのファイルパス」と「ページ番号」を表示
-                    st.info(f"{sub_choice['source']}( ページNo.{sub_choice['page_number']})", icon=icon)
+                    st.info(f"{sub_choice['source']} (ページNo.{sub_choice['page_number']})", icon=icon)
                 else:
                     # 「サブドキュメントのファイルパス」を表示
                     st.info(f"{sub_choice['source']}", icon=icon)
@@ -328,7 +328,7 @@ def display_contact_llm_response(llm_response):
                 # ページ番号を取得
                 page_number = document.metadata["page"]
                 # 「ファイルパス」と「ページ番号」
-                file_info = f"{file_path} (Page No.{page_number})"
+                file_info = f"{file_path} (ページNo.{page_number})"
             else:
                 # 「ファイルパス」のみ
                 file_info = f"{file_path}"
