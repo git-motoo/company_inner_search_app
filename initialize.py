@@ -243,12 +243,15 @@ def file_load(path, docs_all):
     if file_extension == ".csv":
         loader = CSVLoader(path, encoding="utf-8")
         docs = loader.load()
+  
         combined_content = "\n\n".join([doc.page_content for doc in docs])
+        
         # 統合されたDocumentを作成
         full_doc = Document(
             page_content=combined_content,
             metadata={"source": path}
         )
+
         # テキストスプリッターの設定
         # chunk_size: 1つの塊の文字数
         # chunk_overlap: 塊同士をどれだけ重ねるか（文脈を維持するため）
