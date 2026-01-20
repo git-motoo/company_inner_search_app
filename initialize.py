@@ -20,10 +20,11 @@ from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 import constants as ct
 
-# from config import CHUNK_SIZE, CHUNK_OVERLAP, RETRIEVER_TOP_K
+from langchain_community.document_loaders.csv_loader import CSVLoader
+# ↓ これが必要です
+from langchain_core.documents import Document
 
-
-
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
 ############################################################
@@ -218,6 +219,12 @@ def recursive_file_check(path, docs_all):
         # パスがファイルの場合、ファイル読み込み
         file_load(path, docs_all)
 
+#def MyCSVLoader(path):
+#    loader = CSVLoader(path, encoding="utf-8")
+#    docs = loader.load()
+#    full_text = "¥n¥n".join([doc.page_content for doc in docs])
+#    combined_document = [Document(page_content=full_text,metadata={"source": path, "row_count": len(docs)})]
+#    return combined_document
 
 def file_load(path, docs_all):
     """
@@ -232,7 +239,29 @@ def file_load(path, docs_all):
     # ファイル名（拡張子を含む）を取得
     file_name = os.path.basename(path)
 
-    # 想定していたファイル形式の場合のみ読み込む
+    # CSVファイルの場合、特別処理を実施
+    if file_extension == ".csv":
+        loader = CSVLoader(path, encoding="utf-8")
+        docs = loader.load()
+        combined_content = "\n\n".join([doc.page_content for doc in docs])
+        # 統合されたDocumentを作成
+        full_doc = Document(
+            page_content=combined_content,
+            metadata={"source": path}
+        )
+        # テキストスプリッターの設定
+        # chunk_size: 1つの塊の文字数
+        # chunk_overlap: 塊同士をどれだけ重ねるか（文脈を維持するため）
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1000, 
+            chunk_overlap=100,
+            separators=["\n\n", "\n", "。", "、", " "] # 分割する優先順位
+        )
+        # 再分割を実行
+        split_docs = text_splitter.split_documents([full_doc])
+        docs_all.extend(split_docs)
+
+
     if file_extension in ct.SUPPORTED_EXTENSIONS:
         # ファイルの拡張子に合ったdata loaderを使ってデータ読み込み
         loader = ct.SUPPORTED_EXTENSIONS[file_extension](path)
